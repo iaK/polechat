@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polechat</title>
+    <link rel="stylesheet" href="dist/app.css">
+</head>
+
+<body class="bg-zinc-200 justify-center">
+    <div x-data="messages" x-init="$refs.chatInput.focus();startPoll()" class="m-auto mt-8 max-w-sm w-full bg-white p-4 rounded-md">
+        <h1 class="text-center mb-2 text-2xl text-indigo-700">Polechat</h1>
+        <p class="mb-8 text-center text-sm">Chatta genom telefonplans ljus =) <br>OBS! Funkar bara på kvällen. Ditt meddelande kan ta lång tid innan det visas.</p>
+        <div class="mb-8">
+            <input @keydown.enter="submitChatMessage" placeholder="skriv något till chatten.." x-ref="chatInput" type="text" x-model="chatMessage" class="mb-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+            <div x-show="messageSent" class="text-center text-green-500">Meddelandet skickat!</div>
+        </div>
+        <div>
+            <div class="flow-root mt-6">
+                <ul role="list" class="-my-5 divide-y divide-gray-200">
+
+                    <template x-for="message in messages">
+                        <li class="py-5">
+                            <div class="relative focus-within:ring-2 focus-within:ring-indigo-500">
+                                <p class="mt-1 text-sm text-gray-600 line-clamp-2" x-text="message"></p>
+                            </div>
+                        </li>
+                    </template>
+
+
+                    <li x-show="loading" class="py-5">
+                        <div class="flex justify-center animate-spin">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-6 h-6 text-gray-200 "><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M304 48C304 74.51 282.5 96 256 96C229.5 96 208 74.51 208 48C208 21.49 229.5 0 256 0C282.5 0 304 21.49 304 48zM304 464C304 490.5 282.5 512 256 512C229.5 512 208 490.5 208 464C208 437.5 229.5 416 256 416C282.5 416 304 437.5 304 464zM0 256C0 229.5 21.49 208 48 208C74.51 208 96 229.5 96 256C96 282.5 74.51 304 48 304C21.49 304 0 282.5 0 256zM512 256C512 282.5 490.5 304 464 304C437.5 304 416 282.5 416 256C416 229.5 437.5 208 464 208C490.5 208 512 229.5 512 256zM74.98 437C56.23 418.3 56.23 387.9 74.98 369.1C93.73 350.4 124.1 350.4 142.9 369.1C161.6 387.9 161.6 418.3 142.9 437C124.1 455.8 93.73 455.8 74.98 437V437zM142.9 142.9C124.1 161.6 93.73 161.6 74.98 142.9C56.24 124.1 56.24 93.73 74.98 74.98C93.73 56.23 124.1 56.23 142.9 74.98C161.6 93.73 161.6 124.1 142.9 142.9zM369.1 369.1C387.9 350.4 418.3 350.4 437 369.1C455.8 387.9 455.8 418.3 437 437C418.3 455.8 387.9 455.8 369.1 437C350.4 418.3 350.4 387.9 369.1 369.1V369.1z"/></svg>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('messages', () => ({
+                messages: [],
+                messageUrl: 'http://localhost:8081/messages.json',
+                chatMessage: '',
+                messageSent: false,
+                loading: false,
+                startPoll() {
+                    setInterval(() => {
+                        this.loading = true;
+                        fetch(this.messageUrl)
+                            .then(response => response.json())
+                            .then(data => this.decrypt(data))
+                            .finally(() => this.loading = false);
+                    }, 1000);
+                },
+
+                submitChatMessage() {
+                    // post to endpoint
+                    this.chatMessage = '';
+                    this.messageSent = true;
+                    setTimeout(() => this.messageSent = false, 3000)
+                },
+
+                decrypt(data) {
+                    if (this.messages.length === 0 || this.messages[this.messages.length - 1] !== data.message) {
+                        this.messages.push(data.message);
+                    }
+                }
+            }))
+        })
+    </script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
