@@ -14,8 +14,7 @@
         <h1 class="text-center mb-2 text-2xl text-indigo-700">Polechat</h1>
         <p class="mb-8 text-center text-sm">Chatta genom telefonplans ljus =) <br>OBS! Funkar bara på kvällen. Ditt meddelande kan ta lång tid innan det visas.</p>
         <div class="mb-8">
-            <input @keydown.enter="submitChatMessage" placeholder="skriv något till chatten.." x-ref="chatInput" type="text" x-model="chatMessage" class="mb-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
-            <div x-show="messageSent" class="text-center text-green-500">Meddelandet skickat!</div>
+            <input @keydown.enter="submitChatMessage" :disabled="sending" placeholder="skriv något till chatten.." x-ref="chatInput" type="text" x-model="chatMessage" class="mb-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
         </div>
         <div>
             <div class="flow-root mt-6">
@@ -32,11 +31,38 @@
 
                     <li x-show="loading" class="py-5">
                         <div class="flex justify-center animate-spin">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-6 h-6 text-gray-200 "><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M304 48C304 74.51 282.5 96 256 96C229.5 96 208 74.51 208 48C208 21.49 229.5 0 256 0C282.5 0 304 21.49 304 48zM304 464C304 490.5 282.5 512 256 512C229.5 512 208 490.5 208 464C208 437.5 229.5 416 256 416C282.5 416 304 437.5 304 464zM0 256C0 229.5 21.49 208 48 208C74.51 208 96 229.5 96 256C96 282.5 74.51 304 48 304C21.49 304 0 282.5 0 256zM512 256C512 282.5 490.5 304 464 304C437.5 304 416 282.5 416 256C416 229.5 437.5 208 464 208C490.5 208 512 229.5 512 256zM74.98 437C56.23 418.3 56.23 387.9 74.98 369.1C93.73 350.4 124.1 350.4 142.9 369.1C161.6 387.9 161.6 418.3 142.9 437C124.1 455.8 93.73 455.8 74.98 437V437zM142.9 142.9C124.1 161.6 93.73 161.6 74.98 142.9C56.24 124.1 56.24 93.73 74.98 74.98C93.73 56.23 124.1 56.23 142.9 74.98C161.6 93.73 161.6 124.1 142.9 142.9zM369.1 369.1C387.9 350.4 418.3 350.4 437 369.1C455.8 387.9 455.8 418.3 437 437C418.3 455.8 387.9 455.8 369.1 437C350.4 418.3 350.4 387.9 369.1 369.1V369.1z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-6 h-6 text-gray-200 ">
+                                <!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                                <path
+                                    d="M304 48C304 74.51 282.5 96 256 96C229.5 96 208 74.51 208 48C208 21.49 229.5 0 256 0C282.5 0 304 21.49 304 48zM304 464C304 490.5 282.5 512 256 512C229.5 512 208 490.5 208 464C208 437.5 229.5 416 256 416C282.5 416 304 437.5 304 464zM0 256C0 229.5 21.49 208 48 208C74.51 208 96 229.5 96 256C96 282.5 74.51 304 48 304C21.49 304 0 282.5 0 256zM512 256C512 282.5 490.5 304 464 304C437.5 304 416 282.5 416 256C416 229.5 437.5 208 464 208C490.5 208 512 229.5 512 256zM74.98 437C56.23 418.3 56.23 387.9 74.98 369.1C93.73 350.4 124.1 350.4 142.9 369.1C161.6 387.9 161.6 418.3 142.9 437C124.1 455.8 93.73 455.8 74.98 437V437zM142.9 142.9C124.1 161.6 93.73 161.6 74.98 142.9C56.24 124.1 56.24 93.73 74.98 74.98C93.73 56.23 124.1 56.23 142.9 74.98C161.6 93.73 161.6 124.1 142.9 142.9zM369.1 369.1C387.9 350.4 418.3 350.4 437 369.1C455.8 387.9 455.8 418.3 437 437C418.3 455.8 387.9 455.8 369.1 437C350.4 418.3 350.4 387.9 369.1 369.1V369.1z" />
+                            </svg>
                         </div>
                     </li>
                 </ul>
 
+            </div>
+        </div>
+
+        <!-- This example requires Tailwind CSS v2.0+ -->
+        <div x-show="messageSent || messageError" :class="messageSent ? 'bg-green-50' : 'bg-red-50'" class="rounded-md  p-4 absolute bottom-5 right-5">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg x-show="messageError" class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"> <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /> </svg>
+                    <svg x-show="messageSent" class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"> <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /> </svg>
+                </div>
+                <div class="ml-3">
+                    <p x-show="messageSent" class="text-green-800 text-sm font-medium">Meddelandet skickat!</p>
+                    <p x-show="messageError" class="text-red-800 text-sm font-medium">Något gick fel..</p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button type="button" :class="messageSent ? 'bg-green-50 text-green-500 hover:bg-green-100' : 'bg-red-50 text-red-500 hover:bg-red-100'" class="inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-600">
+                            <span class="sr-only">Dismiss</span>
+                            <!-- Heroicon name: solid/x -->
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"> <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /> </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -47,7 +73,10 @@
                 messageUrl: 'http://localhost:8081/messages.json',
                 chatMessage: '',
                 messageSent: false,
+                messageError: false,
                 loading: false,
+                sending: false,
+
                 startPoll() {
                     setInterval(() => {
                         this.loading = true;
@@ -60,9 +89,17 @@
 
                 submitChatMessage() {
                     // post to endpoint
-                    this.chatMessage = '';
-                    this.messageSent = true;
-                    setTimeout(() => this.messageSent = false, 3000)
+                    this.sending = true;
+
+                    setTimeout(() => {
+                        this.chatMessage = '';
+                        this.messageSent = true;
+                        setTimeout(() => this.messageSent = false, 3000)
+                        this.sending = false;
+                        this.$refs.chatInput.focus();
+                        // this.messageError = true;
+                        // setTimeout(() => this.messageError = false, 3000)
+                    }, 1000);
                 },
 
                 decrypt(data) {
